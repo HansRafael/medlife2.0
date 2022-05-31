@@ -11,24 +11,126 @@ datasource db {
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
-model Survey{
-  userId    Int?
-  id        Int      @id @default(autoincrement())
-  title     String   @db.VarChar(255)
-  content   String?
+model User {
+  id          Int      @id @default(autoincrement())
 
-  User      User?    @relation(fields: [userId], references: [id])
+  permissions Boolean  @db.Boolean
+  email       String   @unique @db.VarChar(100)
+  password    String   @db.VarChar(255)
+  first_name  String   @db.VarChar(50)
+  last_name   String   @db.VarChar(50)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  created_at   DateTime @default(now())
+  
+  group     Group  @relation(fields: [group_id], references: [id])
+  group_id   Int    
 }
 
-model User {
-  id       Int      @id @default(autoincrement())
-  name     String
-  email    String   @unique
-  password String
+model Group {
+  id          Int      @id @default(autoincrement())
 
-  createdAt DateTime @default(now())
-  surveys  Survey[]
+  name        String   @db.VarChar(100)
+  description String?  @db.VarChar(1000)
+  active      Boolean  @db.Boolean
+
+  users           User[]
+  survey_forms    Survey_form[]
+
+}
+
+model Survey_form{
+  id            Int      @id @default(autoincrement())
+
+  title         String   @db.VarChar(100)
+  description   String?  @db.VarChar(1000)
+  message_final String?  @db.VarChar(256)
+
+  group         Group  @relation(fields: [group_id], references: [id])
+  group_id      Int 
+
+  surveys       Survey[]
+  questions     Question[]
+}
+
+model Survey {
+  id            Int      @id @default(autoincrement())
+
+  survey_responses     Survey_response[]
+
+  created_at     DateTime @default(now())
+  opening_at     DateTime @default(now())
+  closing_at     DateTime @default(now())
+
+  survey_form     Survey_form  @relation(fields: [survey_form_id], references: [id])
+  survey_form_id   Int 
+
+  doctor          Doctor?  @relation(fields: [doctor_CRM], references: [CRM])
+  doctor_CRM      String
+
+}
+
+model Doctor {
+  CRM          String   @id @db.VarChar(50)
+  survey       Survey?
+
+  first_name   String   @db.VarChar(50)
+  last_name    String   @db.VarChar(50)
+  link_youtube String?  @db.VarChar(256)
+}
+
+model Question {
+  id               Int      @id @default(autoincrement())
+
+  question_responses Question_response[]
+
+  question_type    String   @db.VarChar(50)
+  order            Int
+  text             String   @db.VarChar(1000)
+  required         Boolean  @db.Boolean
+  response_choice  Json?     @db.Json
+
+  survey_form      Survey_form  @relation(fields: [survey_form_id], references: [id])
+  survey_form_id   Int
+
+}
+
+
+model Question_response {
+  question         Question  @relation(fields: [question_id], references: [id])
+  question_id      Int 
+
+  survey_response  Survey_response  @relation(fields: [survey_response_id], references: [id])
+  survey_response_id   Int 
+
+  answer         Json     @db.Json
+
+  @@id([question_id, survey_response_id])
+}
+
+
+model Survey_response {
+  id            Int      @id @default(autoincrement())
+  send_at       DateTime @default(now())
+
+  question_responses Question_response[]
+
+  survey        Survey  @relation(fields: [survey_id], references: [id])
+  survey_id     Int
+
+  respondet    Respondent @relation(fields: [respondet_id], references: [id])
+  respondet_id Int
+
+
+}
+
+
+model Respondent {
+  id         Int      @id @default(autoincrement())
+  survey_response Survey_response?
+
+
+  first_name String?   @db.VarChar(50)
+  last_name  String?   @db.VarChar(50)
+  email      String?   @db.VarChar(100)
+  ip_adress  String   @db.VarChar(50)
 }

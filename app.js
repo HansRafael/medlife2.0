@@ -1,6 +1,20 @@
 const app = require('express')();
 const dotenv = require('dotenv');
+const bodyParser = require('body-parser')
 dotenv.config();
+
+app.use(
+  bodyParser.json({
+    limit: "1mb",
+  })
+);
+
+app.use(
+  bodyParser.urlencoded({
+    limit: "1mb",
+    extended: true,
+  })
+);
 
 app.set("view engine", "ejs");
 

@@ -1,5 +1,6 @@
 const route = require('express').Router();
 const renderViews = require('./render');
+const userController = require('../controller/user.controller')
 
 /**
  *  @description Login Route
@@ -13,5 +14,9 @@ const renderViews = require('./render');
  */
   route.get('/register', renderViews.registerView);
 
+
+//API
+route.post('/api/user', userController.createUser);
+route.get('/api/user', userController.getUserByEmail);
 
 module.exports = route;
